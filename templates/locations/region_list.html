@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Регионы Таджикистана — TravelTajik{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-[#0F3D2E] via-[#1B6B4F] to-emerald-900 rounded-3xl p-8 md:p-12 text-white mb-10 shadow-xl relative overflow-hidden">
+    <div class="max-w-2xl relative z-10">
+        <span class="inline-block bg-white/15 backdrop-blur-sm text-emerald-200 text-xs font-bold uppercase tracking-widest px-3.5 py-1 rounded-full mb-4">
+            Открой Таджикистан
+        </span>
+        <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
+            Регионы и древние города страны
+        </h1>
+        <p class="text-emerald-100/90 text-base md:text-lg leading-relaxed">
+            От высокогорного Памира и бирюзовых озёр Согда до древних крепостей Гиссара и солнечного Хатлона. Выберите регион для начала путешествия.
+        </p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    {% for region in regions %}
+    <div class="bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200/80 overflow-hidden flex flex-col justify-between group">
+        <div>
+            <div class="h-56 w-full relative overflow-hidden bg-gradient-to-r from-[#0F3D2E] to-[#1B6B4F]">
+                {% if region.image %}
+                    <img src="{{ region.image.url }}" alt="{{ region.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-emerald-200/40 text-6xl font-extrabold select-none">▲</div>
+                {% endif %}
+                <div class="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white text-xs font-semibold px-3.5 py-1.5 rounded-full">
+                    Городов: {{ region.cities_count }}
+                </div>
+            </div>
+
+            <div class="p-6 md:p-8 pb-4">
+                <h2 class="text-2xl font-extrabold text-[#0F3D2E] mb-2 group-hover:text-[#1B6B4F] transition">
+                    <a href="{% url 'region_detail' region.pk %}">{{ region.name }}</a>
+                </h2>
+                <p class="text-stone-600 text-sm leading-relaxed mb-6">
+                    {{ region.description|default:"Описание региона скоро появится." }}
+                </p>
+            </div>
+        </div>
+
+        <div class="px-6 md:px-8 pb-6 pt-4 border-t border-stone-100 bg-stone-50/50">
+            <p class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2.5">Города и направления:</p>
+            <div class="flex flex-wrap gap-2 mb-5">
+                {% for city in region.cities.all %}
+                    <a href="{% url 'city_detail' city.pk %}" class="text-xs font-medium bg-white border border-stone-200 hover:border-[#1B6B4F] hover:bg-[#0F3D2E] hover:text-white text-stone-700 px-3 py-1.5 rounded-xl transition">
+                        {{ city.name }}
+                    </a>
+                {% empty %}
+                    <span class="text-xs text-stone-400 italic">Города пока не добавлены</span>
+                {% endfor %}
+            </div>
+
+            <a href="{% url 'region_detail' region.pk %}" class="inline-flex items-center justify-center w-full bg-[#0F3D2E] hover:bg-[#1B6B4F] text-white font-semibold text-sm py-3 px-5 rounded-xl transition">
+                Изучить регион →
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-2 bg-white rounded-3xl p-12 text-center border border-stone-200">
+        <p class="text-lg font-semibold text-stone-700">Регионы ещё не добавлены в базу данных</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

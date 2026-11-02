@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Карточка объекта — TravelTajik{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-stone-200">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-[#0F3D2E] mb-6">
+        {% if object %}Редактировать: {{ object.title }}{% else %}Добавить новое туристическое место{% endif %}
+    </h1>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-5">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-sm font-bold text-stone-700">{{ field.label }}</label>
+                {% if field.name == 'map_url' %}
+                    <a href="https://www.google.com/maps" target="_blank" class="text-xs font-semibold text-[#1B6B4F] hover:underline">
+                        🌍 Открыть Google Карты для поиска ссылки ↗
+                    </a>
+                {% endif %}
+            </div>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-xs text-red-600 mt-1">{{ field.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="flex gap-4 pt-4">
+            <button type="submit" class="bg-[#0F3D2E] hover:bg-[#1B6B4F] text-white font-semibold py-3 px-6 rounded-xl transition">
+                Сохранить объект
+            </button>
+            <a href="{% url 'place_list' %}" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold py-3 px-6 rounded-xl transition">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

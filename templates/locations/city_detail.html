@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ city.name }} — Городской справочник TravelTajik{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap items-center gap-2 text-sm mb-6">
+    <a href="{% url 'region_list' %}" class="text-stone-500 hover:text-[#0F3D2E] transition">Все регионы</a>
+    <span class="text-stone-400">/</span>
+    <a href="{% url 'region_detail' city.region.pk %}" class="text-[#1B6B4F] font-semibold hover:underline">{{ city.region.name }}</a>
+    <span class="text-stone-400">/</span>
+    <span class="text-stone-800 font-bold">{{ city.name }}</span>
+</div>
+
+<div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden mb-10">
+    {% if city.image %}
+        <img src="{{ city.image.url }}" alt="{{ city.name }}" class="w-full h-72 md:h-96 object-cover">
+    {% endif %}
+
+    <div class="p-8 md:p-10">
+        <div class="flex flex-wrap items-center gap-3 mb-3">
+            <span class="bg-emerald-100 text-[#0F3D2E] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">CityGuide • Городской справочник</span>
+            <span class="text-xs text-stone-500 font-medium">Регион: {{ city.region.name }}</span>
+        </div>
+
+        <h1 class="text-3xl md:text-5xl font-extrabold text-[#0F3D2E] mb-5">{{ city.name }}</h1>
+
+        <div class="prose max-w-4xl text-stone-700 text-base md:text-lg leading-relaxed whitespace-pre-line">
+            {{ city.description }}
+        </div>
+    </div>
+</div>
+
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h2 class="text-2xl font-extrabold text-[#0F3D2E]">Интересные места в городе {{ city.name }} ({{ city.places.count }})</h2>
+        <p class="text-sm text-stone-500">Достопримечательности, национальные кафе, парки и гостиницы</p>
+    </div>
+</div>
+
+{% if city.places.all %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for place in city.places.all %}
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col justify-between">
+        <div>
+            <div class="h-44 w-full bg-gradient-to-br from-[#0F3D2E] to-[#1B6B4F]">
+                {% if place.image %}
+                    <img src="{{ place.image.url }}" alt="{{ place.title }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-white/30 text-4xl font-bold">▲</div>
+                {% endif %}
+            </div>
+            <div class="p-5">
+                <h3 class="text-lg font-bold text-[#0F3D2E] mb-2">{{ place.title }}</h3>
+                <p class="text-sm text-stone-600 line-clamp-3">{{ place.description }}</p>
+            </div>
+        </div>
+        <div class="px-5 pb-5">
+            <a href="{% url 'place_detail' place.pk %}" class="inline-block w-full text-center bg-[#F8F6F0] hover:bg-[#0F3D2E] text-[#0F3D2E] hover:text-white font-semibold text-sm py-2.5 rounded-xl transition">
+                Подробнее →
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-3xl p-10 border border-dashed border-stone-300 text-center">
+    <h3 class="text-lg font-bold text-stone-800">В этом городе пока нет добавленных объектов</h3>
+    <p class="text-sm text-stone-500 mt-1">Добавьте первое место через админ-панель или кнопку «+ Добавить место».</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ place.title }} — TravelTajik{% endblock %}
+
+{% block content %}
+<!-- Навигация (Хлебные крошки) -->
+<div class="flex flex-wrap items-center gap-2 text-sm mb-6">
+    <a href="{% url 'place_list' %}" class="text-stone-500 hover:text-[#0F3D2E]">Все места</a>
+    <span class="text-stone-400">/</span>
+    <a href="{% url 'region_detail' place.city.region.pk %}" class="text-stone-500 hover:text-[#0F3D2E]">{{ place.city.region.name }}</a>
+    <span class="text-stone-400">/</span>
+    <a href="{% url 'city_detail' place.city.pk %}" class="text-[#1B6B4F] font-semibold hover:underline">{{ place.city.name }}</a>
+    <span class="text-stone-400">/</span>
+    <span class="text-stone-800 font-bold">{{ place.title }}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Левая колонка: фото и полное описание -->
+    <div class="lg:col-span-2 space-y-8">
+        <div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
+            {% if place.image %}
+                <img src="{{ place.image.url }}" alt="{{ place.title }}" class="w-full h-80 md:h-[420px] object-cover">
+            {% else %}
+                <div class="w-full h-72 bg-gradient-to-r from-[#0F3D2E] to-[#1B6B4F] flex items-center justify-center text-white/30 text-6xl font-bold">▲</div>
+            {% endif %}
+
+            <div class="p-6 md:p-10">
+                <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+                    <div>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            {% for cat in place.categories.all %}
+                                <span class="text-xs font-bold bg-emerald-50 text-[#1B6B4F] border border-emerald-200 px-3 py-1 rounded-full">
+                                    {{ cat.icon_name }} {{ cat.name }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-[#0F3D2E]">{{ place.title }}</h1>
+                    </div>
+
+                    {% if user.is_authenticated %}
+                    <div class="flex gap-2">
+                        <a href="{% url 'place_edit' place.pk %}" class="text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 px-3.5 py-2 rounded-xl transition">
+                            Редактировать
+                        </a>
+                        <a href="{% url 'place_delete' place.pk %}" class="text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-2 rounded-xl transition">
+                            Удалить
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="prose max-w-none text-stone-700 leading-relaxed whitespace-pre-line text-base md:text-lg mt-6">
+                    {{ place.description }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая колонка: Информация о локации и кнопка перехода на карту -->
+    <div class="space-y-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+            <h3 class="text-lg font-extrabold text-[#0F3D2E] mb-4">Информация о месте</h3>
+
+            <div class="space-y-3 text-sm mb-6">
+                <div class="flex justify-between py-2.5 border-b border-stone-100">
+                    <span class="text-stone-500">Регион:</span>
+                    <span class="font-semibold text-stone-800">{{ place.city.region.name }}</span>
+                </div>
+                <div class="flex justify-between py-2.5 border-b border-stone-100">
+                    <span class="text-stone-500">Город / Район:</span>
+                    <a href="{% url 'city_detail' place.city.pk %}" class="font-semibold text-[#1B6B4F] hover:underline">{{ place.city.name }}</a>
+                </div>
+                {% if place.address %}
+                <div class="flex justify-between py-2.5 border-b border-stone-100">
+                    <span class="text-stone-500">Адрес / Ориентир:</span>
+                    <span class="font-medium text-stone-800 text-right">{{ place.address }}</span>
+                </div>
+                {% endif %}
+                {% if place.price_info %}
+                <div class="flex justify-between py-2.5">
+                    <span class="text-stone-500">Цены / Бюджет:</span>
+                    <span class="font-semibold text-emerald-800">{{ place.price_info }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Кнопка перехода по ссылке на карту -->
+            {% if place.map_url %}
+                <a href="{{ place.map_url }}" target="_blank" rel="noopener noreferrer"
+                   class="w-full inline-flex items-center justify-center gap-2 bg-[#0F3D2E] hover:bg-[#1B6B4F] text-white font-bold py-3.5 px-5 rounded-2xl shadow-md hover:shadow-lg transition">
+                    <span>📍</span> Посмотреть на карте ↗
+                </a>
+            {% else %}
+                <div class="w-full text-center bg-stone-100 text-stone-400 text-xs font-medium py-3 px-4 rounded-xl">
+                    Ссылка на карту не указана
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
