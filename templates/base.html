@@ -3,50 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}TravelTajik — Открой Таджикистан{% endblock %}</title>
+    <title>{% block title %}TajikTravel — Открой Таджикистан{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Leaflet CSS & JS для интерактивных карт OpenStreetMap -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-[#F8F6F0] text-stone-800 min-h-screen flex flex-col">
 
+    <!-- Шапка сайта (Navbar) -->
     <header class="bg-[#0F3D2E] text-white sticky top-0 z-50 shadow-lg border-b border-emerald-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <a href="{% url 'place_list' %}" class="flex items-center gap-2.5 group">
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 font-extrabold text-lg">
-                    ▲
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
+            
+            <!-- Логотип TajikTravel -->
+            <a href="{% url 'place_list' %}" class="flex items-center gap-2.5 group shrink-0">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-[#1B6B4F] p-0.5 shadow-md">
+                    <div class="w-full h-full bg-[#0F3D2E] rounded-[14px] flex items-center justify-center">
+                        <svg class="w-6 h-6 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="17" cy="7" r="2.5" class="text-amber-300" fill="currentColor" stroke="none"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 20h18L14 7l-4 6-3-4L3 20z"/>
+                        </svg>
+                    </div>
                 </div>
                 <div>
-                    <span class="text-xl font-extrabold tracking-tight block leading-none">TravelTajik</span>
-                    <span class="text-[11px] text-emerald-300/80 font-medium tracking-wider uppercase">CityGuide & Tourism</span>
+                    <span class="text-lg sm:text-xl font-extrabold tracking-tight block leading-none text-white">
+                        Tajik<span class="text-emerald-400">Travel</span>
+                    </span>
+                    <span class="text-[9px] sm:text-[10px] text-emerald-300/80 font-semibold tracking-widest uppercase">
+                        CityGuide & Tourism
+                    </span>
                 </div>
             </a>
 
-            <nav class="flex items-center gap-6 text-sm font-medium">
+            <!-- Десктопное меню (скрыто на телефонах, видно от md и выше) -->
+            <nav class="hidden md:flex items-center gap-5 text-sm font-medium">
                 <a href="{% url 'place_list' %}" class="text-emerald-100 hover:text-white transition">Все места</a>
                 <a href="{% url 'region_list' %}" class="text-emerald-100 hover:text-white transition">Регионы и города</a>
+
                 {% if user.is_authenticated %}
-                    <a href="{% url 'place_create' %}" class="bg-[#1B6B4F] hover:bg-emerald-600 text-white px-3.5 py-2 rounded-xl transition text-xs font-semibold">
-                        + Добавить место
+                    <a href="{% url 'favorite_list' %}" class="text-amber-300 hover:text-amber-200 transition font-semibold">
+                        ★ Избранное
+                    </a>
+                    <a href="{% url 'profile' %}" class="bg-emerald-950 hover:bg-emerald-900 text-emerald-200 px-3.5 py-1.5 rounded-xl border border-emerald-800 transition">
+                        👤 {{ user.username }}
+                    </a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'place_create' %}" class="bg-[#1B6B4F] hover:bg-emerald-600 text-white px-3.5 py-1.5 rounded-xl transition text-xs font-semibold">
+                            + Добавить место
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-emerald-100 hover:text-white transition">Войти</a>
+                    <a href="{% url 'register' %}" class="bg-[#1B6B4F] hover:bg-emerald-600 text-white px-4 py-2 rounded-xl transition font-semibold">
+                        Регистрация
                     </a>
                 {% endif %}
             </nav>
+
+            <!-- Кнопка бургер-меню (видна ТОЛЬКО на телефонах) -->
+            <button id="mobile-menu-btn" type="button" class="md:hidden p-2 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-200 hover:text-white focus:outline-none">
+                <svg id="menu-open-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg id="menu-close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Выпадающее мобильное меню (для телефонов) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0A2B20] border-t border-emerald-800/80 px-4 pt-3 pb-5 space-y-2.5 text-sm">
+            <a href="{% url 'place_list' %}" class="block py-2 px-3 rounded-xl text-emerald-100 hover:bg-emerald-900/60 font-medium">
+                🏔 Все места
+            </a>
+            <a href="{% url 'region_list' %}" class="block py-2 px-3 rounded-xl text-emerald-100 hover:bg-emerald-900/60 font-medium">
+                📍 Регионы и города
+            </a>
+           
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'favorite_list' %}" class="block py-2 px-3 rounded-xl text-amber-300 hover:bg-emerald-900/60 font-semibold">
+                    ★ Избранное
+                </a>
+                <a href="{% url 'profile' %}" class="block py-2 px-3 rounded-xl text-emerald-200 bg-emerald-950/80 border border-emerald-800 font-semibold">
+                    👤 Профиль ({{ user.username }})
+                </a>
+                {% if user.is_staff %}
+                    <a href="{% url 'place_create' %}" class="block text-center py-2.5 px-3 rounded-xl bg-[#1B6B4F] text-white font-semibold mt-2">
+                        + Добавить место
+                    </a>
+                {% endif %}
+            {% else %}
+                <div class="pt-2 border-t border-emerald-800/80 grid grid-cols-2 gap-3">
+                    <a href="{% url 'login' %}" class="text-center py-2.5 px-3 rounded-xl bg-emerald-950 border border-emerald-800 text-emerald-100 font-semibold">
+                        Войти
+                    </a>
+                    <a href="{% url 'register' %}" class="text-center py-2.5 px-3 rounded-xl bg-[#1B6B4F] text-white font-semibold">
+                        Регистрация
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 md:py-10">
+    <!-- Контент страницы (уменьшены отступы py-6 на мобильных) -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 md:py-10">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-[#0F3D2E] text-stone-300 py-8 mt-16 border-t border-emerald-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
-            <div><span class="font-bold text-white">TravelTajik</span> — Единая цифровая туристическая платформа Таджикистана</div>
-            <div class="text-xs text-emerald-400">Django MVT • PostgreSQL • Tailwind CSS • Leaflet OSM</div>
+    <!-- Подвал сайта (Footer) -->
+    <footer class="bg-[#0F3D2E] text-stone-300 py-8 md:py-10 mt-12 border-t border-emerald-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-5">
+            
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="17" cy="7" r="2.5" class="text-amber-300" fill="currentColor" stroke="none"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 20h18L14 7l-4 6-3-4L3 20z"/>
+                    </svg>
+                </div>
+                <div class="text-sm">
+                    <span class="font-extrabold text-white tracking-tight">Tajik<span class="text-emerald-400">Travel</span></span>
+                    <p class="text-xs text-stone-400 mt-0.5">Единая цифровая туристическая платформа Таджикистана</p>
+                </div>
+            </div>
+
+            <div>
+                <a href="https://www.instagram.com/tajiktrevel?xtok=MWh6eHJ2c3F1aGxnZQ==" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2.5 bg-gradient-to-r from-pink-600 via-purple-600 to-amber-500 hover:opacity-90 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    <span>Наш Instagram</span>
+                </a>
+            </div>
+
         </div>
     </footer>
+
+    <!-- Скрипт открытия/закрытия мобильного меню -->
+    <script>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        const openIcon = document.getElementById('menu-open-icon');
+        const closeIcon = document.getElementById('menu-close-icon');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            openIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
+        });
+    </script>
 
 </body>
 </html>

@@ -15,7 +15,7 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Левая колонка: фото и полное описание -->
+    <!-- Левая колонка: фото, описание и отзывы -->
     <div class="lg:col-span-2 space-y-8">
         <div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
             {% if place.image %}
@@ -37,21 +37,106 @@
                         <h1 class="text-3xl md:text-4xl font-extrabold text-[#0F3D2E]">{{ place.title }}</h1>
                     </div>
 
-                    {% if user.is_authenticated %}
-                    <div class="flex gap-2">
-                        <a href="{% url 'place_edit' place.pk %}" class="text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 px-3.5 py-2 rounded-xl transition">
-                            Редактировать
-                        </a>
-                        <a href="{% url 'place_delete' place.pk %}" class="text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-2 rounded-xl transition">
-                            Удалить
-                        </a>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Кнопка Избранное (для всех вошедших пользователей) -->
+                        {% if user.is_authenticated %}
+                        <form action="{% url 'toggle_favorite' place.pk %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="px-4 py-2 rounded-xl font-semibold text-xs border transition
+                                {% if is_favorited %}bg-amber-50 border-amber-300 text-amber-800{% else %}bg-stone-100 border-stone-200 text-stone-700 hover:bg-stone-200{% endif %}">
+                                {% if is_favorited %}★ В избранном{% else %}☆ В избранное{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <!-- Кнопки Редактировать и Удалить — ТОЛЬКО ДЛЯ АДМИНА -->
+                        {% if user.is_staff %}
+                            <a href="{% url 'place_edit' place.pk %}" class="text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 px-3.5 py-2 rounded-xl transition">
+                                Редактировать
+                            </a>
+                            <a href="{% url 'place_delete' place.pk %}" class="text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-700 px-3.5 py-2 rounded-xl transition">
+                                Удалить
+                            </a>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
 
                 <div class="prose max-w-none text-stone-700 leading-relaxed whitespace-pre-line text-base md:text-lg mt-6">
                     {{ place.description }}
                 </div>
+            </div>
+        </div>
+
+        <!-- Секция отзывов и оценок -->
+        <div class="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-stone-200">
+            <div class="mb-6">
+                <h2 class="text-2xl font-extrabold text-[#0F3D2E]">
+                    Отзывы путешественников ({{ place.reviews.count }})
+                </h2>
+                {% if place.avg_rating %}
+                    <p class="text-sm text-stone-600 mt-1">
+                        Средняя оценка: <b class="text-amber-600">★ {{ place.avg_rating|floatformat:1 }}</b> из 5
+                    </p>
+                {% endif %}
+            </div>
+
+            {% if user.is_authenticated %}
+            <form action="{% url 'add_review' place.pk %}" method="post" class="mb-8 bg-stone-50 p-6 rounded-2xl border border-stone-200 space-y-4">
+                {% csrf_token %}
+                <h3 class="font-bold text-stone-800 text-sm">Оставить свой отзыв</h3>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1.5">Ваша оценка</label>
+                    <select name="rating" class="w-full p-3 rounded-xl border border-stone-300 bg-white text-sm outline-none focus:border-[#1B6B4F]">
+                        <option value="5">5 ★ — Отлично</option>
+                        <option value="4">4 ★ — Хорошо</option>
+                        <option value="3">3 ★ — Нормально</option>
+                        <option value="2">2 ★ — Плохо</option>
+                        <option value="1">1 ★ — Ужасно</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1.5">Комментарий</label>
+                    <textarea name="text" rows="3" required placeholder="Поделитесь впечатлениями об этом месте..."
+                            class="w-full p-3 rounded-xl border border-stone-300 bg-white text-sm outline-none focus:border-[#1B6B4F]"></textarea>
+                </div>
+
+                <button type="submit" class="bg-[#0F3D2E] hover:bg-[#1B6B4F] text-white font-semibold text-sm py-2.5 px-5 rounded-xl transition">
+                    Опубликовать отзыв
+                </button>
+            </form>
+            {% else %}
+            <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 mb-8 text-center text-sm text-stone-600">
+                Чтобы оставить отзыв, <a href="{% url 'login' %}" class="font-bold text-[#1B6B4F] underline">войдите в аккаунт</a>.
+            </div>
+            {% endif %}
+
+            <!-- Список отзывов -->
+            <div class="space-y-4">
+                {% for review in place.reviews.all %}
+                <div class="p-4 rounded-2xl bg-stone-50/70 border border-stone-100 flex justify-between items-start gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-stone-900 text-sm">👤 {{ review.user.username }}</span>
+                            <span class="text-amber-600 font-bold text-xs bg-amber-50 px-2 py-0.5 rounded-md">★ {{ review.rating }}/5</span>
+                        </div>
+                        <p class="text-stone-700 text-sm mt-1 leading-relaxed">{{ review.text }}</p>
+                        <span class="text-[11px] text-stone-400 mt-2 block">{{ review.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+
+                    {% if user == review.user or user.is_staff %}
+                    <form action="{% url 'delete_review' review.pk %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs text-red-600 hover:text-red-800 font-semibold bg-white border border-red-200 px-3 py-1 rounded-lg transition">
+                            Удалить
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-stone-500 text-sm italic">Пока нет отзывов. Будьте первым!</p>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -84,7 +169,6 @@
                 {% endif %}
             </div>
 
-            <!-- Кнопка перехода по ссылке на карту -->
             {% if place.map_url %}
                 <a href="{{ place.map_url }}" target="_blank" rel="noopener noreferrer"
                    class="w-full inline-flex items-center justify-center gap-2 bg-[#0F3D2E] hover:bg-[#1B6B4F] text-white font-bold py-3.5 px-5 rounded-2xl shadow-md hover:shadow-lg transition">

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет — TravelTajik{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-stone-200 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div>
+        <span class="text-xs font-bold uppercase tracking-widest text-[#1B6B4F]">Профиль пользователя</span>
+        <h1 class="text-3xl font-extrabold text-[#0F3D2E] mt-1">Привет, {{ user.username }}!</h1>
+        <p class="text-stone-600 text-sm mt-1">Электронная почта: {{ user.email|default:"не указана" }} | Дата регистрации: {{ user.date_joined|date:"d.m.Y" }}</p>
+    </div>
+
+    <!-- Кнопка выхода из системы (POST-запрос) -->
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-sm py-2.5 px-5 rounded-xl transition border border-red-200">
+            Выйти из аккаунта
+        </button>
+    </form>
+</div>
+
+<!-- Секция избранных мест прямо в профиле -->
+<h2 class="text-2xl font-extrabold text-[#0F3D2E] mb-6">Ваши сохраненные места ({{ favorites.count }})</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for fav in favorites %}
+    <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-stone-200 flex flex-col justify-between">
+        <div>
+            <div class="h-44 w-full bg-gradient-to-br from-[#0F3D2E] to-[#1B6B4F] relative overflow-hidden">
+                {% if fav.place.image %}
+                    <img src="{{ fav.place.image.url }}" alt="{{ fav.place.title }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-white/30 text-4xl font-bold">▲</div>
+                {% endif %}
+            </div>
+            <div class="p-5">
+                <span class="text-xs text-[#1B6B4F] font-semibold">{{ fav.place.city.name }}</span>
+                <h3 class="text-lg font-bold text-[#0F3D2E] mt-1 mb-2">
+                    <a href="{% url 'place_detail' fav.place.pk %}" class="hover:underline">{{ fav.place.title }}</a>
+                </h3>
+                <p class="text-xs text-stone-600 line-clamp-2">{{ fav.place.description }}</p>
+            </div>
+        </div>
+        <div class="px-5 pb-5 pt-3 border-t border-stone-100 flex justify-between items-center">
+            <a href="{% url 'place_detail' fav.place.pk %}" class="text-xs font-bold text-[#0F3D2E]">Открыть →</a>
+            <form action="{% url 'toggle_favorite' fav.place.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="text-xs text-red-600 hover:underline">Удалить</option>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-3 bg-white p-8 rounded-3xl border border-stone-200 text-center text-stone-500">
+        У вас пока нет сохраненных мест в избранном. Перейдите в <a href="{% url 'place_list' %}" class="text-[#1B6B4F] font-bold underline">каталог</a>, чтобы добавить.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

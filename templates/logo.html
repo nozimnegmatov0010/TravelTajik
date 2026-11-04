@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Instagram Logo — TajikTravel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-stone-900 min-h-screen flex items-center justify-center p-10">
+
+    <!-- Квадрат 500x500 для аватарки Instagram -->
+    <div class="w-[500px] h-[500px] bg-gradient-to-br from-[#0F3D2E] via-[#134e3a] to-[#09261c] flex flex-col items-center justify-center relative overflow-hidden shadow-2xl border border-emerald-500/20">
+        
+        <!-- Декоративное свечение на фоне -->
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-400/15 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
+
+        <!-- Центральная иконка гор и солнца -->
+        <div class="w-44 h-44 rounded-[42px] bg-gradient-to-br from-emerald-400 to-[#1B6B4F] p-1.5 shadow-2xl mb-7">
+            <div class="w-full h-full bg-[#0F3D2E] rounded-[36px] flex items-center justify-center">
+                <svg class="w-28 h-28 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="17" cy="7" r="2.5" class="text-amber-300" fill="currentColor" stroke="none"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 20h18L14 7l-4 6-3-4L3 20z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Текст бренда -->
+        <div class="text-center z-10">
+            <h1 class="text-5xl font-black tracking-tight text-white leading-none">
+                Tajik<span class="text-emerald-400">Travel</span>
+            </h1>
+            <p class="text-xs text-emerald-300/80 font-bold tracking-[0.28em] uppercase mt-3">
+                CityGuide & Tourism
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>
